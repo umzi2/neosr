@@ -42,6 +42,10 @@ class default():
 
         # define network net_d
         self.net_d = self.opt.get('network_d', None)
+        if 'multiscale' in self.net_d.get("type"):
+            self.patchgan_ms = True
+        else:
+            self.patchgan_ms = False
         if self.net_d is not None:
             self.net_d = build_network(self.opt['network_d'])
             self.net_d = self.model_to_device(self.net_d)
@@ -76,18 +80,12 @@ class default():
             self.net_d.train()
 
         # scale ratio var
-        self.scale = self.opt['scale'] 
-
-        # gt size var
-        if self.opt["model_type"] == "otf":
-            self.gt_size = self.opt["gt_size"]
-        else:
-            self.gt_size = self.opt["datasets"]["train"].get("gt_size")
+        self.scale = self.opt['scale']
 
         # augmentations
         self.aug = self.opt["datasets"]["train"].get("augmentation", None)
         self.aug_prob = self.opt["datasets"]["train"].get("aug_prob", None)
-            
+
         # for amp
         self.use_amp = self.opt.get('use_amp', False) is True
         self.amp_dtype = torch.bfloat16 if self.opt.get('bfloat16', False) is True else torch.float16
@@ -95,19 +93,17 @@ class default():
 
         # LQ matching for Color/Luma losses
         self.match_lq = self.opt['train'].get('match_lq', False)
-        
+
         # initialise counter of how many batches has to be accumulated
         self.n_accumulated = 0
-        self.accum_iters = self.opt["datasets"]["train"].get("accumulate", 1) 
+        self.accum_iters = self.opt["datasets"]["train"].get("accumulate", 1)
         if self.accum_iters == 0 or self.accum_iters == None:
             self.accum_ters = 1
-
         # define losses
         if train_opt.get('pixel_opt'):
             self.cri_pix = build_loss(train_opt['pixel_opt']).to(self.device, memory_format=torch.channels_last, non_blocking=True)
         else:
             self.cri_pix = None
-
         if train_opt.get('mssim_opt'):
             self.cri_mssim = build_loss(train_opt['mssim_opt']).to(self.device, memory_format=torch.channels_last, non_blocking=True)
         else:
@@ -136,7 +132,6 @@ class default():
             self.cri_ldl = build_loss(train_opt['ldl_opt']).to(self.device, memory_format=torch.channels_last, non_blocking=True)
         else:
             self.cri_ldl = None
-
         # Focal Frequency Loss
         if train_opt.get('ff_opt'):
             self.cri_ff = build_loss(train_opt['ff_opt']).to(self.device, memory_format=torch.channels_last, non_blocking=True)
@@ -196,9 +191,6 @@ class default():
             raise ValueError(msg)
         if self.net_d is None and self.cri_gan is not None:
             msg = "GAN requires a discriminator to be set."
-            raise ValueError(msg)
-        if self.aug is not None and self.gt_size % 4 != 0:
-            msg = "The gt_size value must be a multiple of 4. Please change it."
             raise ValueError(msg)
 
         self.net_d_iters = train_opt.get('net_d_iters', 1)
@@ -391,15 +383,23 @@ class default():
                     l_g_total += l_g_luma
                     loss_dict['l_g_luma'] = l_g_luma
                 # GAN loss
-                if self.cri_gan:
+                if self.patchgan_ms is True and self.cri_gan:
+                    fake_g_preds = self.net_d(self.output)
+                    loss_dict['l_g_gan'] = 0
+                    for fake_g_pred in fake_g_preds:
+                        l_g_gan = self.cri_gan(fake_g_pred, True, is_disc=False)
+                        l_g_total += l_g_gan
+                        loss_dict['l_g_gan'] += l_g_gan
+                elif self.cri_gan:
                     fake_g_pred = self.net_d(self.output)
                     l_g_gan = self.cri_gan(fake_g_pred, True, is_disc=False)
                     l_g_total += l_g_gan
                     loss_dict['l_g_gan'] = l_g_gan
 
+
         # add total generator loss for tensorboard tracking
         loss_dict['l_g_total'] = l_g_total
-                   
+
         # divide losses by accumulation factor
         l_g_total = l_g_total / self.accum_iters
         self.gradscaler.scale(l_g_total).backward()
@@ -419,8 +419,33 @@ class default():
 
             with torch.autocast(device_type='cuda', dtype=self.amp_dtype, enabled=self.use_amp):
 
-                if self.cri_gan:
-                # real
+                if self.patchgan_ms is True and self.cri_gan:
+
+                    loss_dict['l_d_fake'] = 0
+                    loss_dict['out_d_fake'] = 0
+                    loss_dict['l_d_real']=0
+                    loss_dict['out_d_real']=0
+                    l_d_fake_tot = 0
+                    l_d_real_tot = 0
+                    if self.wavelet_guided:
+                        fake_d_preds = self.net_d(combined_HF.detach().clone())
+                    else:
+                        fake_d_preds = self.net_d(self.output.detach().clone())
+                    for fake_d_pred in fake_d_preds:
+                        l_d_fake = self.cri_gan(fake_d_pred, False, is_disc=True)
+                        l_d_fake_tot += l_d_fake
+                        loss_dict['l_d_fake'] += l_d_fake
+                        loss_dict['out_d_fake'] += torch.mean(fake_d_pred.detach())
+                    if self.wavelet_guided:
+                        real_d_preds = self.net_d(combined_HF_gt)
+                    else:
+                        real_d_preds = self.net_d(self.gt)
+                    for real_d_pred in real_d_preds:
+                        l_d_real = self.cri_gan(real_d_pred, True, is_disc=True)
+                        l_d_real_tot += l_d_real
+                        loss_dict['l_d_real'] += l_d_real
+                        loss_dict['out_d_real'] += torch.mean(real_d_pred.detach())
+                elif self.cri_gan:
                     if self.wavelet_guided:
                         real_d_pred = self.net_d(combined_HF_gt)
                     else:
@@ -436,12 +461,19 @@ class default():
                     l_d_fake = self.cri_gan(fake_d_pred, False, is_disc=True)
                     loss_dict['l_d_fake'] = l_d_fake
                     loss_dict['out_d_fake'] = torch.mean(fake_d_pred.detach())
-
-            if self.cri_gan:
+            #
+            if self.patchgan_ms is True:
+                l_d_real_tot = l_d_real_tot / self.accum_iters
+                l_d_real_tot = l_d_real_tot / self.accum_iters
+                self.gradscaler.scale(l_d_real_tot).backward()
+                self.gradscaler.scale(l_d_fake_tot).backward()
+            elif self.cri_gan:
                 l_d_real = l_d_real / self.accum_iters
                 l_d_fake = l_d_fake / self.accum_iters
                 self.gradscaler.scale(l_d_real).backward()
                 self.gradscaler.scale(l_d_fake).backward()
+
+
 
             # clip and step() discriminator
             if (self.n_accumulated) % self.accum_iters == 0:
@@ -514,7 +546,7 @@ class default():
 
             patch_size_tmp_h = split_token_h
             patch_size_tmp_w = split_token_w
-            
+
             # padding
             mod_pad_h, mod_pad_w = 0, 0
             if h % patch_size_tmp_h != 0:
