@@ -42,7 +42,7 @@ class default():
 
         # define network net_d
         self.net_d = self.opt.get('network_d', None)
-        if 'multiscale' in self.net_d.get("type"):
+        if self.net_d and 'multiscale' in self.net_d.get("type"):
             self.patchgan_ms = True
         else:
             self.patchgan_ms = False
