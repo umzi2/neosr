@@ -3,6 +3,7 @@ from torch import nn
 
 from neosr.losses.basic_loss import chc
 from neosr.utils.color_util import rgb_to_cbcr
+from neosr.utils.color_util import rgb_to_uv
 from neosr.utils.registry import LOSS_REGISTRY
 
 
@@ -19,18 +20,19 @@ class colorloss(nn.Module):
     """
 
     def __init__(
-        self,
-        criterion: str = "huber",
-        avgpool: bool = False,
-        scale: int = 2,
-        loss_weight: float = 1.0,
+            self,
+            criterion: str = "huber",
+            avgpool: bool = False,
+            scale: int = 2,
+            loss_weight: float = 1.0,
+            cbcr_or_uv: str = "bt601"
     ) -> None:
         super(colorloss, self).__init__()
         self.loss_weight = loss_weight
         self.criterion_type = criterion
         self.avgpool = avgpool
         self.scale = scale
-
+        self.filter = rgb_to_cbcr if cbcr_or_uv == "bt601" else rgb_to_uv
         if self.criterion_type == "l1":
             self.criterion = nn.L1Loss()
         elif self.criterion_type == "l2":
@@ -43,8 +45,8 @@ class colorloss(nn.Module):
             raise NotImplementedError(f"{criterion} criterion has not been supported.")
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        input_uv = rgb_to_cbcr(input)
-        target_uv = rgb_to_cbcr(target)
+        input_uv = self.filter(input)
+        target_uv = self.filter(target)
 
         # TODO: test downscale operation
         if self.avgpool:

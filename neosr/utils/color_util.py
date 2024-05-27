@@ -1,7 +1,11 @@
 import numpy as np
 import torch
 
-
+KB_2020 = 0.0593
+KR_2020 = 0.2627
+KG_2020 = 1 - KR_2020 - KB_2020
+KUC = (1 - KB_2020) / 0.5
+KVC = (1 - KR_2020) / 0.5
 def rgb2ycbcr(img, y_only=False):
     """Convert a RGB image to YCbCr image.
 
@@ -255,11 +259,11 @@ def rgb_to_cbcr(img: torch.Tensor) -> torch.Tensor:
     """
 
     if not isinstance(img, torch.Tensor):
-        raise TypeError(f"Input type is not a Tensor. Got {type(image)}")
+        raise TypeError(f"Input type is not a Tensor. Got {type(img)}")
 
     if len(img.shape) < 3 or img.shape[-3] != 3:
         raise ValueError(
-            f"Input size must have a shape of (*, 3, H, W). Got {image.shape}"
+            f"Input size must have a shape of (*, 3, H, W). Got {img.shape}"
         )
 
     # bt.601 matrices in 16-240 range
@@ -279,15 +283,58 @@ def rgb_to_cbcr(img: torch.Tensor) -> torch.Tensor:
     return out_img
 
 
+def rgb_to_uv(img: torch.Tensor) -> torch.Tensor:
+    '''
+    RGB to YUV. Outputs tensor with only UV channels.
+    '''
+
+    if not isinstance(img, torch.Tensor):
+        raise TypeError(f"Input type is not a Tensor. Got {type(img)}")
+
+    if len(img.shape) < 3 or img.shape[-3] != 3:
+        raise ValueError(f"Input size must have a shape of (*, 3, H, W). Got {img.shape}")
+
+    # define separate rgb channels
+    r: torch.Tensor = img[..., 0, :, :]
+    g: torch.Tensor = img[..., 1, :, :]
+    b: torch.Tensor = img[..., 2, :, :]
+
+    delta: float = 0.5
+    # convert to yuv bt.2020
+    y: torch.Tensor = KR_2020 * r + KG_2020 * g + KB_2020 * b
+    u: torch.Tensor = (b - y) / KUC + delta  # cb
+    v: torch.Tensor = (r - y) / KVC + delta  # cr
+
+    # return only uv (colors)
+    out_img = torch.stack((u, v), -3)
+
+    return out_img
+
+
+def rgb_to_y(img: torch.Tensor) -> torch.Tensor:
+    if not isinstance(img, torch.Tensor):
+        raise TypeError(f"Input type is not a Tensor. Got {type(img)}")
+
+    if len(img.shape) < 3 or img.shape[-3] != 3:
+        raise ValueError(
+            f"Input size must have a shape of (*, 3, H, W). Got {img.shape}"
+        )
+    # Y bt.2020
+    weight = torch.tensor([KR_2020, KG_2020, KB_2020], device=img.device).view(3, 1)
+    out_img = torch.matmul(img.permute(0, 2, 3, 1), weight).permute(0, 3, 1, 2)
+
+    return out_img
+
+
 def rgb_to_luma(img: torch.Tensor) -> torch.Tensor:
     """RGB to CIELAB L*"""
 
     if not isinstance(img, torch.Tensor):
-        raise TypeError(f"Input type is not a Tensor. Got {type(image)}")
+        raise TypeError(f"Input type is not a Tensor. Got {type(img)}")
 
     if len(img.shape) < 3 or img.shape[-3] != 3:
         raise ValueError(
-            f"Input size must have a shape of (*, 3, H, W). Got {image.shape}"
+            f"Input size must have a shape of (*, 3, H, W). Got {img.shape}"
         )
 
     # permute
