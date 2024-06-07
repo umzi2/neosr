@@ -92,7 +92,7 @@ class sisr(base):
         )
         # self.gradscaler = torch.amp.GradScaler('cuda', enabled=self.use_amp, init_scale=2.**5)
         self.gradscaler = torch.cuda.amp.GradScaler(
-            enabled=self.use_amp, init_scale=2.0**5
+            enabled=self.use_amp, init_scale=2.0 ** 5
         )
 
         # LQ matching for Color/Luma losses
@@ -121,28 +121,28 @@ class sisr(base):
         # define losses
         if train_opt.get("pixel_opt"):
             self.cri_pix = build_loss(train_opt["pixel_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_pix = None
 
         if train_opt.get("mssim_opt"):
             self.cri_mssim = build_loss(train_opt["mssim_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_mssim = None
 
         if train_opt.get("perceptual_opt"):
             self.cri_perceptual = build_loss(train_opt["perceptual_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_perceptual = None
 
         if train_opt.get("dists_opt"):
             self.cri_dists = build_loss(train_opt["dists_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_dists = None
@@ -150,7 +150,7 @@ class sisr(base):
         # GAN loss
         if train_opt.get("gan_opt"):
             self.cri_gan = build_loss(train_opt["gan_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_gan = None
@@ -158,7 +158,7 @@ class sisr(base):
         # LDL loss
         if train_opt.get("ldl_opt"):
             self.cri_ldl = build_loss(train_opt["ldl_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_ldl = None
@@ -166,7 +166,7 @@ class sisr(base):
         # Focal Frequency Loss
         if train_opt.get("ff_opt"):
             self.cri_ff = build_loss(train_opt["ff_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_ff = None
@@ -174,7 +174,7 @@ class sisr(base):
         # Gradient-Weighted loss
         if train_opt.get("gw_opt"):
             self.cri_gw = build_loss(train_opt["gw_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_gw = None
@@ -182,7 +182,7 @@ class sisr(base):
         # Color loss
         if train_opt.get("color_opt"):
             self.cri_color = build_loss(train_opt["color_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_color = None
@@ -190,7 +190,7 @@ class sisr(base):
         # Luma loss
         if train_opt.get("luma_opt"):
             self.cri_luma = build_loss(train_opt["luma_opt"]).to(
-                self.device, memory_format=torch.channels_last, non_blocking=True
+                self.device, non_blocking=True
             )
         else:
             self.cri_luma = None
@@ -292,7 +292,7 @@ class sisr(base):
             # define alpha with sigmoid-like curve, slope/skew at 0.25
             if self.eco_schedule == "sigmoid":
                 a = 1 / (
-                    1 + math.exp(-1 * (10 * (current_iter / self.eco_iters - 0.25)))
+                        1 + math.exp(-1 * (10 * (current_iter / self.eco_iters - 0.25)))
                 )
             else:
                 a = min(current_iter / self.eco_iters, 1.0)
@@ -331,7 +331,7 @@ class sisr(base):
             self.n_accumulated = 0
 
         with torch.autocast(
-            device_type="cuda", dtype=self.amp_dtype, enabled=self.use_amp
+                device_type="cuda", dtype=self.amp_dtype, enabled=self.use_amp
         ):
             # eco
             if self.eco and current_iter <= self.eco_iters:
@@ -375,7 +375,7 @@ class sisr(base):
                     l_g_pix_hl = self.wg_pw_hl * self.cri_pix(HL, HL_gt)
                     l_g_pix_hh = self.wg_pw_hh * self.cri_pix(HH, HH_gt)
                     l_g_total = (
-                        l_g_total + l_g_pix + l_g_pix_lh + l_g_pix_hl + l_g_pix_hh
+                            l_g_total + l_g_pix + l_g_pix_lh + l_g_pix_hl + l_g_pix_hh
                     )
                 else:
                     l_g_pix = self.cri_pix(self.output, self.gt)
@@ -389,11 +389,11 @@ class sisr(base):
                     l_g_mssim_hl = self.wg_pw_hl * self.cri_mssim(HL, HL_gt)
                     l_g_mssim_hh = self.wg_pw_hh * self.cri_mssim(HH, HH_gt)
                     l_g_total = (
-                        l_g_total
-                        + l_g_mssim
-                        + l_g_mssim_lh
-                        + l_g_mssim_hl
-                        + l_g_mssim_hh
+                            l_g_total
+                            + l_g_mssim
+                            + l_g_mssim_lh
+                            + l_g_mssim_hl
+                            + l_g_mssim_hh
                     )
                 else:
                     l_g_mssim = self.cri_mssim(self.output, self.gt)
@@ -474,7 +474,7 @@ class sisr(base):
                 p.requires_grad = True
 
             with torch.autocast(
-                device_type="cuda", dtype=self.amp_dtype, enabled=self.use_amp
+                    device_type="cuda", dtype=self.amp_dtype, enabled=self.use_amp
             ):
                 if self.cri_gan:
                     # real
@@ -621,8 +621,8 @@ class sisr(base):
             self.net_g.train()
             _, _, h, w = self.output.size()
             self.output = self.output[
-                :, :, 0 : h - mod_pad_h * scale, 0 : w - mod_pad_w * scale
-            ]
+                          :, :, 0: h - mod_pad_h * scale, 0: w - mod_pad_w * scale
+                          ]
 
     def dist_validation(self, dataloader, current_iter, tb_logger, save_img):
         if self.opt["rank"] == 0:
@@ -805,9 +805,10 @@ class sisr(base):
                     )
                     load_net[k + ".ignore"] = load_net.pop(k)
 
+
 @MODEL_REGISTRY.register()
 class default(sisr):
     """For backward compatibility"""
+
     def __init__(self, opt):
         super(default, self).__init__(opt)
-

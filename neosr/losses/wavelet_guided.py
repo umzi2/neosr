@@ -497,7 +497,7 @@ def wavelet_guided(output, gt):
         syn_hi = wavelet.rec_hi
 
         filters = pywt.Wavelet("wavelet_normalized", [an_lo, an_hi, syn_lo, syn_hi])
-        sfm = SWTForward(1, filters, "periodic").to(device, memory_format=torch.channels_last, non_blocking=True)
+        sfm = SWTForward(1, filters, "periodic").to(device,  non_blocking=True)
 
         # wavelet bands of sr image
         sr_img_y = 16.0 + (
