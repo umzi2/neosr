@@ -63,7 +63,7 @@ def load_net():
             if hasattr(module, "switch_to_deploy"):
                 module.switch_to_deploy(args.prune)
         print("-------- Reparametrization completed successfully.")
-    except:
+    except:  # noqa: S110
         pass
 
     net = net.to(device="cuda", non_blocking=True)  # type: ignore[reportAttributeAccessIssue,attr-defined]
@@ -127,10 +127,7 @@ def to_onnx() -> None:
             "output_names": ["output"],
         }
     else:
-        dyn_axes = {
-            "input_names": ["input"],
-            "output_names": ["output"],
-        }
+        dyn_axes = {"input_names": ["input"], "output_names": ["output"]}
 
     # add _fp32 suffix to output str
     filename, extension = osp.splitext(args.output)  # noqa: PTH122
@@ -138,19 +135,18 @@ def to_onnx() -> None:
     # begin conversion
     print("-------- Starting ONNX conversion (this can take a while)...")
 
-    with torch.inference_mode():
-        with torch.device("cpu"):
-            # TODO: add param dynamo=True as a switch
-            # py2.5 supports the verify=True flag now as well
-            torch.onnx.export(
-                model,
-                dummy_input,
-                output_fp32,
-                export_params=True,
-                opset_version=args.opset,
-                do_constant_folding=False,
-                **(dyn_axes or {}),  # type: ignore
-            )
+    with torch.inference_mode(), torch.device("cpu"):
+        # TODO: add param dynamo=True as a switch
+        # py2.5 supports the verify=True flag now as well
+        torch.onnx.export(
+            model,
+            dummy_input,
+            output_fp32,
+            export_params=True,
+            opset_version=args.opset,
+            do_constant_folding=False,
+            **(dyn_axes or {}),  # type: ignore
+        )
 
     print("-------- Conversion was successful. Verifying...")
     # verify onnx

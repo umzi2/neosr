@@ -315,8 +315,7 @@ class base:
             new_state_dict = OrderedDict()
 
             for key, param in state_dict.items():
-                if key.startswith("module."):  # remove unnecessary 'module.'
-                    key = key[7:]  # noqa: PLW2901
+                key = key.removeprefix("module.")  # noqa: PLW2901
                 if key.startswith("n_averaged"):  # skip n_averaged from EMA
                     continue
                 new_state_dict[key] = param.cpu()

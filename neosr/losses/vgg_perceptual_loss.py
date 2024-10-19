@@ -16,36 +16,6 @@ if TYPE_CHECKING:
 upscale, __ = net_opt()
 
 
-@LOSS_REGISTRY.register()
-class PDL(nn.Module):
-    """Projected Distribution Loss: https://arxiv.org/abs/2012.09289"""
-
-    def __init__(self, num_projections=36) -> None:
-        super().__init__()
-        self.num_projections = num_projections
-
-    def rand_projections(self, dim, device="cuda"):
-        projections = torch.randn((dim, self.num_projections), device=device)
-        return projections / torch.sqrt(torch.sum(projections**2, dim=0, keepdim=True))
-
-    def forward(self, x: Tensor, y: Tensor):
-        x = x.reshape(x.shape[0], x.shape[1], -1)
-        y = y.reshape(y.shape[0], y.shape[1], -1)
-        W = self.rand_projections(x.shape[-1], device=x.device)
-        e_x = torch.matmul(x, W)
-        e_y = torch.matmul(y, W)
-        loss = 0
-        for ii in range(e_x.shape[2]):
-            # use chc instead of L1
-            criterion = chc_loss(loss_lambda=0, clip_min=0, clip_max=1)
-            loss = loss + criterion(
-                torch.sort(e_x[:, :, ii], dim=1)[0], torch.sort(e_y[:, :, ii], dim=1)[0]
-            )
-            # reduce weight to match other criterions
-            loss = loss * 0.75
-        return loss
-
-
 class PatchesKernel3D(nn.Module):
     """Adapted from 'Patch Loss: A Generic Multi-Scale Perceptual Loss for
     Single Image Super-resolution':
@@ -172,8 +142,6 @@ class vgg_perceptual_loss(nn.Module):
             self.criterion = nn.HuberLoss()
         elif self.criterion_type == "chc":
             self.criterion = chc_loss(loss_lambda=0, clip_min=0, clip_max=1)  # type: ignore[reportCallIssue]
-        elif self.criterion_type == "pdl":
-            self.criterion = PDL()  # type: ignore[reportCallIssue]
         else:
             msg = f"{criterion} criterion not supported."
             raise NotImplementedError(msg)
@@ -188,48 +156,29 @@ class vgg_perceptual_loss(nn.Module):
 
         """
         loss = 0.0
+        kernels = self.ipk_kernels if is_ipk else self.perceptual_kernels
 
-        # IPK
-        if is_ipk:
-            for _kernel in self.ipk_kernels:
-                _patchkernel3d = PatchesKernel3D(_kernel, _kernel // 2).to(
-                    x.device, non_blocking=True
-                )  # create instance
-                x_trans = _patchkernel3d(x)
-                gt_trans = _patchkernel3d(gt)
-                x_trans = x_trans.reshape(-1, x_trans.shape[-1])
-                gt_trans = gt_trans.reshape(-1, gt_trans.shape[-1])
+        for _kernel in kernels:
+            _patchkernel3d = PatchesKernel3D(_kernel, _kernel // 2).to(
+                x.device, non_blocking=True
+            )  # create instance
+            x_trans = _patchkernel3d(x)
+            gt_trans = _patchkernel3d(gt)
+            x_trans = x_trans.reshape(-1, x_trans.shape[-1])
+            gt_trans = gt_trans.reshape(-1, gt_trans.shape[-1])
+
+            if is_ipk:
                 x_trans = torch.clamp(x_trans, 0.000001, 0.999999)
                 gt_trans = torch.clamp(gt_trans, 0.000001, 0.999999)
-                dot_x_y = torch.einsum("ik,ik->i", x_trans, gt_trans)
 
-                dy = torch.std(gt_trans, dim=1)
-                cosine_x_y = torch.div(
-                    torch.div(dot_x_y, torch.sqrt(torch.sum(x_trans**2, dim=1))),
-                    torch.sqrt(torch.sum(gt_trans**2, dim=1)),
-                )
-                cosine_x_y_d = torch.mul((1 - cosine_x_y), dy)  # y = (1-x)dy
-                loss = loss + cast(float, torch.mean(cosine_x_y_d))
-
-        # FPK
-        else:
-            for _kernel in self.perceptual_kernels:
-                _patchkernel3d = PatchesKernel3D(_kernel, _kernel // 2).to(
-                    x.device, non_blocking=True
-                )  # create instance
-                x_trans = _patchkernel3d(x)
-                gt_trans = _patchkernel3d(gt)
-                x_trans = x_trans.reshape(-1, x_trans.shape[-1])
-                gt_trans = gt_trans.reshape(-1, gt_trans.shape[-1])
-                dot_x_y = torch.einsum("ik,ik->i", x_trans, gt_trans)
-
-                dy = torch.std(gt_trans, dim=1)
-                cosine_x_y = torch.div(
-                    torch.div(dot_x_y, torch.sqrt(torch.sum(x_trans**2, dim=1))),
-                    torch.sqrt(torch.sum(gt_trans**2, dim=1)),
-                )
-                cosine_x_y_d = torch.mul((1 - cosine_x_y), dy)  # y = (1-x)dy
-                loss = loss + cast(float, torch.mean(cosine_x_y_d))
+            dot_x_y = torch.einsum("ik,ik->i", x_trans, gt_trans)
+            dy = torch.std(gt_trans, dim=1)
+            cosine_x_y = torch.div(
+                torch.div(dot_x_y, torch.sqrt(torch.sum(x_trans**2, dim=1))),
+                torch.sqrt(torch.sum(gt_trans**2, dim=1)),
+            )
+            cosine_x_y_d = torch.mul((1 - cosine_x_y), dy)  # y = (1-x)dy
+            loss = loss + cast(float, torch.mean(cosine_x_y_d))
 
         return loss
 

@@ -99,7 +99,7 @@ def activation(act_type, inplace=False, neg_slope=0.05, n_prelu=1):
 
 
 class SRBW1(nn.Module):
-    def __init__(self, n_feats, wn=torch.nn.utils.weight_norm, act=nn.ReLU(True)):
+    def __init__(self, n_feats, act=nn.ReLU(True)):
         super().__init__()
         self.res_scale = Scale(1)
         self.x_scale = Scale(1)
@@ -119,7 +119,7 @@ class SRBW1(nn.Module):
 
 
 class SRBW2(nn.Module):
-    def __init__(self, n_feats, wn=torch.nn.utils.weight_norm, act=nn.ReLU(True)):
+    def __init__(self, n_feats, act=nn.ReLU(True)):
         super().__init__()
         self.res_scale = Scale(1)
         self.x_scale = Scale(1)
@@ -217,12 +217,7 @@ class sa_layer(nn.Module):
 class MY(nn.Module):
     def __init__(self, n_feats, act=nn.ReLU(True)):
         super().__init__()
-
         self.act = activation("lrelu", neg_slope=0.05)
-
-        def wn(x):
-            return torch.nn.utils.weight_norm(x)
-
         self.srb1 = SRBW1(n_feats)
         self.srb2 = SRBW1(n_feats)
         self.rb1 = SRBW1(n_feats)

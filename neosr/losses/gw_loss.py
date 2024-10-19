@@ -109,4 +109,3 @@ class gw_loss(nn.Module):
         loss = torch.mean(loss) * 0.5
 
         return loss * self.loss_weight
-

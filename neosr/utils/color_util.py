@@ -208,7 +208,14 @@ def _convert_output_type_range(img: np.ndarray, dst_type: DTypeLike) -> np.ndarr
         (ndarray): The converted image with desired type and range.
 
     """
-    if str(dst_type) not in {"np.uint8", "np.float32", "np.float16", "float32", "float16", "uint8"}:
+    if str(dst_type) not in {
+        "np.uint8",
+        "np.float32",
+        "np.float16",
+        "float32",
+        "float16",
+        "uint8",
+    }:
         msg = f"The dst_type should be np.float32, np.float16 or np.uint8, but got {dst_type}"
         raise TypeError(msg)
     if dst_type == np.uint8:

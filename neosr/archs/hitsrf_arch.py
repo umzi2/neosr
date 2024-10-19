@@ -638,7 +638,7 @@ class BasicLayer(nn.Module):
         for blk in self.blocks:
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(
-                    blk, x, x_size, (self.win_hs[i], self.win_ws[i])
+                    blk, x, x_size, (self.win_hs[i], self.win_ws[i]), use_reentrant=False
                 )
             else:
                 x = blk(x, x_size, (self.win_hs[i], self.win_ws[i]))

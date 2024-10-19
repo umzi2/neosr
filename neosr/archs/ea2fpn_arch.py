@@ -25,8 +25,8 @@ class ConvBnMish(nn.Module):
         pad: int,
         dilation: int = 1,
         groups: int = 1,
-        has_bn: bool = True,
-        norm_layer: type[nn.BatchNorm2d] = nn.BatchNorm2d,
+        has_gn: bool = True,
+        norm_layer: type[nn.GroupNorm] = nn.GroupNorm,
         bn_eps: float = 1e-5,
         has_mish: bool = True,
         inplace: bool = True,
@@ -45,16 +45,16 @@ class ConvBnMish(nn.Module):
                 bias=has_bias,
             )
         )
-        self.has_bn = has_bn
-        if self.has_bn:
-            self.bn = norm_layer(out_planes, eps=bn_eps)
+        self.has_gn = has_gn
+        if self.has_gn:
+            self.bn = norm_layer(8, out_planes, eps=bn_eps)
         self.has_mish = has_mish
         if self.has_mish:
             self.mish = nn.Mish(inplace=inplace)
 
     def forward(self, x: Tensor) -> Tensor:
         x = self.conv(x)
-        if self.has_bn:
+        if self.has_gn:
             x = self.bn(x)
         if self.has_mish:
             x = self.mish(x)
@@ -66,7 +66,6 @@ class Attention(Module):
         super().__init__()
         self.gamma = Parameter(torch.zeros(1))
         self.in_places = in_places
-        self.l2_norm = l2_norm
         self.eps = eps
 
         self.query_conv = Conv2d(
@@ -86,8 +85,8 @@ class Attention(Module):
         K = self.key_conv(x).view(batch_size, -1, width * height)
         V = self.value_conv(x).view(batch_size, -1, width * height)
 
-        Q = self.l2_norm(Q).permute(-3, -1, -2)
-        K = self.l2_norm(K)
+        Q = l2_norm(Q).permute(-3, -1, -2)
+        K = l2_norm(K)
 
         tailor_sum = 1 / (
             width * height
@@ -133,7 +132,7 @@ class Conv3x3GNMish(nn.Module):
                     in_channels, out_channels, (3, 3), stride=1, padding=1, bias=False
                 )
             ),
-            nn.GroupNorm(32, out_channels),
+            nn.GroupNorm(8, out_channels),
             nn.Mish(inplace=True),
         )
 
