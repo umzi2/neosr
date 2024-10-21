@@ -247,6 +247,7 @@ class LMLTVIT(nn.Module):
         v, lepe = self.get_lepe(v, self.get_v)
 
         if self.flash_attn:
+            self.register_buffer("flash_attn", torch.zeros(1, dtype=torch.bool))
             with torch.no_grad():
                 x = (
                     nn.functional.scaled_dot_product_attention(

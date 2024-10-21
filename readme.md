@@ -124,24 +124,25 @@ Where `options.toml` is a configuration file. Templates can be found in [options
 
 ### [supported losses](https://github.com/neosr-project/neosr/wiki/Losses):
 
-| loss                                                                   						| option               		      	     |
-|-----------------------------------------------------------------------------------------------------------------------|--------------------------------------------|
-| L1 Loss                                                                						| `L1Loss`, `l1_loss`  		     	     |
-| L2 Loss                                                                						| `MSELoss`, `mse_loss`    	     	     |
-| Huber Loss                                                             						| `HuberLoss`, `huber_loss` 	    	     |
-| CHC (Clipped Huber with Cosine Similarity Loss)			 						| `chc_loss`				     |
+| loss                                                                   							| option               		      	     |
+|-------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------|
+| L1 Loss                                                                							| `L1Loss`, `l1_loss`  		     	     |
+| L2 Loss                                                                							| `MSELoss`, `mse_loss`    	     	     |
+| Huber Loss                                                             							| `HuberLoss`, `huber_loss` 	    	     |
+| CHC (Clipped Huber with Cosine Similarity Loss)			 							| `chc_loss`				     |
 | [NCC](https://github.com/neosr-project/neosr/wiki/Losses#ncc_opt-ncc_loss) (Normalized Cross-Correlation)			| `ncc_opt`, `ncc_loss`			     |
 | [Perceptual Loss](https://github.com/neosr-project/neosr/wiki/Losses#perceptual_opt-vgg_perceptual_loss)			| `perceptual_opt`, `vgg_perceptual_loss`    |
 | [GAN](https://github.com/neosr-project/neosr/wiki/Losses#gan_opt-gan_loss)							| `gan_opt`, `gan_loss`			     |
-| [MS-SSIM](https://github.com/lartpang/mssim.pytorch)			 						| `mssim_opt` `mssim_loss`		     |
-| [LDL Loss](https://github.com/csjliang/LDL)                            						| `ldl_opt`, `ldl_loss` 	             |
-| [Focal Frequency](https://github.com/EndlessSora/focal-frequency-loss) 						| `ff_opt`, `ff_loss`             	     |
-| [DISTS](https://github.com/dingkeyan93/DISTS)				 						| `dists_opt`, `dists_loss`		     |
-| [Wavelet Guided](https://github.com/mandalinadagi/WGSR)		 						| `wavelet_guided`			     |
-| [Gradient-Weighted](https://github.com/xiezw5/Component-Divide-and-Conquer-for-Real-World-Image-Super-Resolution/)	| `gw_opt`, `gw_loss`			     | 
-| [Perceptual Patch Loss](https://github.com/Suanmd/Patch-Loss-for-Super-Resolution)					| `perceptual_opt`, `patchloss`, `ipk`	     |
+| [MS-SSIM](https://github.com/lartpang/mssim.pytorch)			 							| `mssim_opt` `mssim_loss`		     |
+| [LDL Loss](https://github.com/csjliang/LDL)                            							| `ldl_opt`, `ldl_loss` 	             |
+| [Focal Frequency](https://github.com/EndlessSora/focal-frequency-loss) 							| `ff_opt`, `ff_loss`             	     |
+| [DISTS](https://github.com/dingkeyan93/DISTS)				 							| `dists_opt`, `dists_loss`		     |
+| [Wavelet Guided](https://github.com/mandalinadagi/WGSR)		 							| `wavelet_guided`			     |
+| [Gradient-Weighted](https://github.com/xiezw5/Component-Divide-and-Conquer-for-Real-World-Image-Super-Resolution/)		| `gw_opt`, `gw_loss`			     | 
+| [Perceptual Patch Loss](https://github.com/Suanmd/Patch-Loss-for-Super-Resolution)						| `perceptual_opt`, `patchloss`, `ipk`	     |
 | [Consistency Loss](https://github.com/neosr-project/neosr/wiki/Losses#consistency_opt-consistency_loss) (Oklab and CIE L*)	| `consistency_opt`, `consistency_loss`	     |
-| [KL Divergence](https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html)					| `kl_opt`, `kl_loss`			     |
+| [KL Divergence](https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html)						| `kl_opt`, `kl_loss`			     |
+| [MS-SWD](https://github.com/real-hjq/MS-SWD)											| `msswd_opt`, `msswd_loss`		     |
 
 ### [supported augmentations](https://github.com/neosr-project/neosr/wiki/Configuration-Walkthrough#augmentations-aug_prob):
 

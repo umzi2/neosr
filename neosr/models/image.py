@@ -195,6 +195,15 @@ class image(base):
         else:
             self.cri_consistency = None
 
+        # msswd loss
+        if train_opt.get("msswd_opt"):
+            self.cri_msswd = build_loss(train_opt["msswd_opt"]).to(  # type: ignore[reportCallIssue,attr-defined]
+                self.device, memory_format=torch.channels_last, non_blocking=True
+            )
+        else:
+            self.cri_msswd = None
+
+
         # vgg19 perceptual loss
         if train_opt.get("perceptual_opt"):
             self.cri_perceptual = build_loss(train_opt["perceptual_opt"]).to(  # type: ignore[reportCallIssue,attr-defined]
@@ -521,6 +530,14 @@ class image(base):
                     l_g_consistency = self.cri_consistency(self.output, self.gt)
                 l_g_total += l_g_consistency
                 loss_dict["l_g_consistency"] = l_g_consistency
+            # msswd loss
+            if self.cri_msswd:
+                if self.match_lq_colors:
+                    l_g_msswd = self.cri_msswd(self.output, self.lq_interp)
+                else:
+                    l_g_msswd = self.cri_msswd(self.output, self.gt)
+                l_g_total += l_g_msswd
+                loss_dict["l_g_msswd"] = l_g_msswd
             # perceptual loss
             if self.cri_perceptual:
                 l_g_percep = self.cri_perceptual(self.output, self.gt)
