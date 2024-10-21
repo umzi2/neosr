@@ -50,7 +50,7 @@ class InterpolateUpsampler(nn.Sequential):
 
 
 class ConvBlock(nn.Module):
-    r"""https://github.com/joshyZhou/AST/blob/main/model.py#L22"""
+    """https://github.com/joshyZhou/AST/blob/main/model.py#L22"""
 
     def __init__(self, in_channel: int = 3, out_channel: int = 48, strides: int = 1):
         super().__init__()
@@ -61,11 +61,11 @@ class ConvBlock(nn.Module):
             nn.Conv2d(
                 in_channel, out_channel, kernel_size=3, stride=strides, padding=1
             ),
-            nn.Mish(),
+            nn.Mish(inplace=True),
             nn.Conv2d(
                 out_channel, out_channel, kernel_size=3, stride=strides, padding=1
             ),
-            nn.Mish(),
+            nn.Mish(inplace=True),
         )
         self.conv11 = nn.Conv2d(
             in_channel, out_channel, kernel_size=1, stride=strides, padding=0
@@ -160,14 +160,6 @@ class OmniShift(nn.Module):
         return out
 
 
-class MatMul(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, a, b):
-        return a @ b
-
-
 class LMLTVIT(nn.Module):
     def __init__(
         self,
@@ -241,25 +233,17 @@ class LMLTVIT(nn.Module):
         x = rearrange(x, "b (h w) c -> b c h w", h=H, w=W)
         x = self.omni_shift(x)
         x = rearrange(x, "b c h w -> b h w c")
-        ################################
-        # 1. window partition
-        ################################
+        # window partition
         x_window = self.window_partition(x, self.window_size).permute(0, 3, 1, 2)
         x_window = x_window.permute(0, 2, 3, 1).view(
             -1, self.window_size * self.window_size, C
         )
-
-        ################################
-        # 2. make qkv
-        ################################
+        # make qkv
         qkv = self.qkv(x_window)
         # qkv = qkv.permute(0,2,3,1)
         # qkv = qkv.reshape(-1, self.window_size * self.window_size, 3*C)
         q, k, v = torch.chunk(qkv, 3, dim=-1)
-
-        ################################
-        # 3. attn and PE
-        ################################
+        # attn and PE
         v, lepe = self.get_lepe(v, self.get_v)
 
         if self.flash_attn:
@@ -279,9 +263,7 @@ class LMLTVIT(nn.Module):
             # x = x.reshape(-1, self.window_size, self.window_size, C)
             # x = x.permute(0,3,1,2)
 
-        ################################
-        # 4. proj and drop
-        ################################
+        # proj and drop
         x = self.proj(x)
         x = self.proj_drop(x)
 
@@ -315,7 +297,7 @@ class ChannelMix(nn.Module):
         x = rearrange(x, "b c h w -> b (h w) c")
 
         k = self.key(x)
-        k = torch.square(torch.relu(k))
+        k = torch.square(F.relu(k, inplace=True))
         if self.key_norm is not None:
             k = self.key_norm(k)
         kv = self.value(k)
@@ -636,7 +618,7 @@ class flexnet(nn.Module):
         ),  # meta = (8,8,8,8), # linear = (6, 6, 6, 6, 6, 6),
         window_size: int = 8,
         hidden_rate: int = 4,
-        channel_norm: bool = False,
+        channel_norm: bool = True,
         attn_drop: float = 0.0,
         proj_drop: float = 0.0,
         pipeline_type: Literal["meta", "linear"] = "linear",
