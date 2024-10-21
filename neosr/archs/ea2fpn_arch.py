@@ -148,7 +148,11 @@ class FPNBlock(nn.Module):
         super().__init__()
         self.skip_conv = nn.Conv2d(skip_channels, pyramid_channels, kernel_size=1)
         self.dysample = DySample(
-            in_channels=64, out_ch=64, scale=2, groups=4, end_convolution=False
+            in_channels=pyramid_channels,
+            out_ch=pyramid_channels,
+            scale=2,
+            groups=4,
+            end_convolution=False,
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -189,7 +193,7 @@ class ea2fpn(nn.Module):
         encoder_channels: tuple[int, int, int, int] = (512, 256, 128, 64),
         pyramid_channels: int = 64,
         segmentation_channels: int = 64,
-        dropout: float = 0.2,
+        dropout: float = 0.0,
         **kwargs,  # noqa: ARG002
     ) -> None:
         super().__init__()

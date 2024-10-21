@@ -61,3 +61,4 @@
 | [`KRGN`](https://github.com/ZhangDY827/KRGN)									| Unknown													|
 | [`PlainUSR`](https://github.com/icandle/PlainUSR)								| [MIT](https://github.com/icandle/PlainUSR/blob/main/LICENSE)							|
 | [`HASN`](https://github.com/nathan66666/HASN)									| Unknown													|
+| [`FlexNet`](https://github.com/umzi2/FlexNet)									| [MIT](https://github.com/umzi2/FlexNet/blob/master/LICENSE)							|
