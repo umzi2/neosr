@@ -41,7 +41,7 @@ val_freq = 1000
 [network_g]
 type = "flexnet"
 #type = "metaflexnet"
-#flash_attn = true
+#flash_attn = false 
 
 [network_d]
 type = "ea2fpn"

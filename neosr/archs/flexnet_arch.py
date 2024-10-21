@@ -618,12 +618,12 @@ class flexnet(nn.Module):
         ),  # meta = (8,8,8,8), # linear = (6, 6, 6, 6, 6, 6),
         window_size: int = 8,
         hidden_rate: int = 4,
-        channel_norm: bool = True,
+        channel_norm: bool = False,
         attn_drop: float = 0.0,
         proj_drop: float = 0.0,
         pipeline_type: Literal["meta", "linear"] = "linear",
         upsampler: Literal["ps", "n+c", "dys"] = "ps",
-        flash_attn: bool = False,
+        flash_attn: bool = True,
     ):
         super().__init__()
         self.register_buffer(

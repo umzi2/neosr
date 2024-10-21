@@ -16,7 +16,7 @@ dataroot_lq = 'C:\datasets\val\'
 [network_g]
 type = "flexnet"
 #type = "metaflexnet"
-#flash_attn = true
+#flash_attn = false 
 
 [path]
 pretrain_network_g = 'C:\model.pth'
