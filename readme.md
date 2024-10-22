@@ -161,8 +161,8 @@ Where `options.toml` is a configuration file. Templates can be found in [options
 
 | model 	| description                                                            | option    |
 |---------------|------------------------------------------------------------------------|-----------|
-| Single Image  | Base model for SISR, supports both Generator and Discriminator         | `image`   |
-| OTF     	| Builds on top of `default`, adding Real-ESRGAN on-the-fly degradations | `otf`     |
+| Image		| Base model for SISR, supports both Generator and Discriminator         | `image`   |
+| OTF     	| Builds on top of `image`, adding Real-ESRGAN on-the-fly degradations	 | `otf`     |
 
 ### [supported dataloaders](https://github.com/neosr-project/neosr/wiki/Configuration-Walkthrough#dataset-type):
 
