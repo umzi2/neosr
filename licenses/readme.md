@@ -64,3 +64,4 @@
 | [`FlexNet`](https://github.com/umzi2/FlexNet)									| [MIT](https://github.com/umzi2/FlexNet/blob/master/LICENSE)							|
 | [`MS-SWD`](https://github.com/real-hjq/MS-SWD)								| Unknown													|
 | [`FDL`](https://github.com/eezkni/FDL)									| Unknown													|
+| [`CFSR`](https://github.com/Aitical/CFSR)									| Unknown													|

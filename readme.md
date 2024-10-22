@@ -97,6 +97,7 @@ Where `options.toml` is a configuration file. Templates can be found in [options
 | [PlainUSR](https://github.com/icandle/PlainUSR)				| `plainusr`, `plainusr_ultra`, `plainusr_large`   | 
 | [HASN](https://github.com/nathan66666/HASN)					| `hasn`					   |
 | [FlexNet](https://github.com/umzi2/FlexNet)					| `flexnet`, `metaflexnet`			   |
+| [CFSR](https://github.com/Aitical/CFSR)					| `cfsr`					   |
 
 
 ### [supported discriminators](https://github.com/neosr-project/neosr/wiki/Arch%E2%80%90specific-options#discriminators):
