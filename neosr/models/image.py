@@ -588,6 +588,7 @@ class image(base):
 
         # divide losses by accumulation factor
         l_g_total /= self.accum_iters
+
         # backward generator
         if self.sam and current_iter >= self.sam_init:
             l_g_total.backward()
@@ -604,7 +605,7 @@ class image(base):
             torch.nn.utils.clip_grad_norm_(
                 self.net_g.parameters(),  # type: ignore[reportAttributeAccessIssue,attr-defined]
                 1.0,
-                error_if_nonfinite=False,
+                error_if_nonfinite=True,
             )
 
         # optimize net_d
@@ -668,7 +669,7 @@ class image(base):
                 torch.nn.utils.clip_grad_norm_(
                     self.net_d.parameters(),  # type: ignore[reportAttributeAccessIssue,attr-defined]
                     1.0,
-                    error_if_nonfinite=False,
+                    error_if_nonfinite=True,
                 )
 
         # error if NaN

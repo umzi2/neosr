@@ -45,7 +45,7 @@ class GaussianFilter2D(nn.Module):
         sigma2 = self.sigma * self.sigma
         x = torch.arange(-(self.window_size // 2), self.window_size // 2 + 1)
         w = torch.exp(-0.5 * x**2 / sigma2)
-        w /= w.sum()
+        w = w / w.sum()
         return w.reshape(1, 1, 1, self.window_size)
 
     def _get_gaussian_window2d(self, gaussian_window_1d) -> Tensor:
@@ -122,7 +122,7 @@ class mssim_loss(nn.Module):
         if y.type() != self.gaussian_filter.gaussian_window.type():
             y = y.type_as(self.gaussian_filter.gaussian_window)
 
-        loss = 1 - self.msssim(x, y)
+        loss = 1.0 - self.msssim(x, y)
 
         return self.loss_weight * loss
 
@@ -141,7 +141,9 @@ class mssim_loss(nn.Module):
                 x = F.avg_pool2d(x, kernel_size=2, stride=2, padding=padding)
                 y = F.avg_pool2d(y, kernel_size=2, stride=2, padding=padding)
 
-        return cast(Tensor, math.prod(ms_components))  # equ 7 in ref2
+        mssim = math.prod(ms_components) # equ 7 in ref2
+        mssim = cast(Tensor, mssim)
+        return mssim
 
     def _ssim(self, x: Tensor, y: Tensor) -> tuple[Tensor, Tensor]:
         mu_x = self.gaussian_filter(x)  # equ 14
