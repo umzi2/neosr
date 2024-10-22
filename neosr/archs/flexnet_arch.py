@@ -247,7 +247,6 @@ class LMLTVIT(nn.Module):
         v, lepe = self.get_lepe(v, self.get_v)
 
         if self.flash_attn:
-            self.register_buffer("flash_attn", torch.zeros(1, dtype=torch.bool))
             with torch.no_grad():
                 x = (
                     nn.functional.scaled_dot_product_attention(
@@ -630,6 +629,8 @@ class flexnet(nn.Module):
         self.register_buffer(
             "window_size", torch.tensor(window_size, dtype=torch.uint8)
         )
+        if flash_attn:
+            self.register_buffer("flash_attn", torch.zeros(1, dtype=torch.bool))
         self.pipeline_type = pipeline_type
         self.scale = scale
         self.short_cut = ConvBlock(inp_channels, dim)
