@@ -92,11 +92,11 @@ class MLP(nn.Module):
         self.act = nn.GELU()
 
         scale_sobel_x = torch.randn(size=(dim * mlp_ratio, 1, 1, 1)) * 1e-3
-        self.scale_sobel_x = nn.Parameter(scale_sobel_x.clone())
+        self.scale_sobel_x = nn.Parameter(scale_sobel_x)
         sobel_x_bias = torch.randn(dim * mlp_ratio) * 1e-3
         sobel_x_bias = torch.reshape(sobel_x_bias, (dim * mlp_ratio,))
-        self.sobel_x_bias = nn.Parameter(sobel_x_bias.clone())
-        self.mask_sobel_x = torch.zeros((dim * mlp_ratio, 1, 3, 3), dtype=torch.float32)
+        self.sobel_x_bias = nn.Parameter(sobel_x_bias)
+        self.mask_sobel_x = torch.zeros((dim * mlp_ratio, 1, 3, 3))
         for i in range(dim * mlp_ratio):
             self.mask_sobel_x[i, 0, 0, 1] = 1.0
             self.mask_sobel_x[i, 0, 1, 0] = 2.0
@@ -107,11 +107,11 @@ class MLP(nn.Module):
         self.mask_sobel_x = nn.Parameter(data=self.mask_sobel_x, requires_grad=False)
 
         scale_sobel_y = torch.randn(size=(dim * mlp_ratio, 1, 1, 1)) * 1e-3
-        self.scale_sobel_y = nn.Parameter(scale_sobel_y.clone())
+        self.scale_sobel_y = nn.Parameter(scale_sobel_y)
         sobel_y_bias = torch.randn(dim * mlp_ratio) * 1e-3
         sobel_y_bias = torch.reshape(sobel_y_bias, (dim * mlp_ratio,))
-        self.sobel_y_bias = nn.Parameter(sobel_y_bias.clone())
-        self.mask_sobel_y = torch.zeros((dim * mlp_ratio, 1, 3, 3), dtype=torch.float32)
+        self.sobel_y_bias = nn.Parameter(sobel_y_bias)
+        self.mask_sobel_y = torch.zeros((dim * mlp_ratio, 1, 3, 3))
         for i in range(dim * mlp_ratio):
             self.mask_sobel_y[i, 0, 0, 0] = 1.0
             self.mask_sobel_y[i, 0, 0, 1] = 2.0
@@ -122,13 +122,11 @@ class MLP(nn.Module):
         self.mask_sobel_y = nn.Parameter(data=self.mask_sobel_y, requires_grad=False)
 
         scale_laplacian = torch.randn(size=(dim * mlp_ratio, 1, 1, 1)) * 1e-3
-        self.scale_laplacian = nn.Parameter(scale_laplacian.clone())
+        self.scale_laplacian = nn.Parameter(scale_laplacian)
         laplacian_bias = torch.randn(dim * mlp_ratio) * 1e-3
         laplacian_bias = torch.reshape(laplacian_bias, (dim * mlp_ratio,))
-        self.laplacian_bias = nn.Parameter(laplacian_bias.clone())
-        self.mask_laplacian = torch.zeros(
-            (dim * mlp_ratio, 1, 3, 3), dtype=torch.float32
-        )
+        self.laplacian_bias = nn.Parameter(laplacian_bias)
+        self.mask_laplacian = torch.zeros((dim * mlp_ratio, 1, 3, 3))
         for i in range(dim * mlp_ratio):
             self.mask_laplacian[i, 0, 0, 0] = 1.0
             self.mask_laplacian[i, 0, 1, 0] = 1.0
