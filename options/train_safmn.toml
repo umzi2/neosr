@@ -66,11 +66,11 @@ warmup_steps = 1600
 
 [train.optim_d]
 type = "adan_sf"
-lr = 2e-4
+lr = 1e-4
 betas = [ 0.98, 0.92, 0.99 ]
 weight_decay = 0.01
 schedule_free = true
-#warmup_steps = 600
+warmup_steps = 600
 
 #  losses
 [train.mssim_opt]

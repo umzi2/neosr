@@ -132,7 +132,7 @@ class Conv3x3GNMish(nn.Module):
                     in_channels, out_channels, (3, 3), stride=1, padding=1, bias=False
                 )
             ),
-            nn.GroupNorm(8, out_channels),
+            nn.GroupNorm(16, out_channels),
             nn.Mish(inplace=True),
         )
 
@@ -248,9 +248,7 @@ class ea2fpn(nn.Module):
             nn.init.trunc_normal_(m.weight, std=0.02)
             if isinstance(m, nn.Linear) and m.bias is not None:
                 nn.init.constant_(m.bias, 0)
-        elif isinstance(
-            m, nn.LayerNorm | nn.BatchNorm2d | nn.GroupNorm | nn.InstanceNorm2d
-        ):
+        elif isinstance(m, nn.GroupNorm):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
