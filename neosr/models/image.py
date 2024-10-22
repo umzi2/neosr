@@ -203,6 +203,13 @@ class image(base):
         else:
             self.cri_msswd = None
 
+        # fdl perceptual loss
+        if train_opt.get("fdl_opt"):
+            self.cri_fdl = build_loss(train_opt["fdl_opt"]).to(  # type: ignore[reportCallIssue,attr-defined]
+                self.device, memory_format=torch.channels_last, non_blocking=True
+            )
+        else:
+            self.cri_fdl = None
 
         # vgg19 perceptual loss
         if train_opt.get("perceptual_opt"):
@@ -212,6 +219,7 @@ class image(base):
         else:
             self.cri_perceptual = None
 
+        # dists loss
         if train_opt.get("dists_opt"):
             self.cri_dists = build_loss(train_opt["dists_opt"]).to(  # type: ignore[reportCallIssue,attr-defined]
                 self.device, memory_format=torch.channels_last, non_blocking=True
@@ -538,6 +546,11 @@ class image(base):
                     l_g_msswd = self.cri_msswd(self.output, self.gt)
                 l_g_total += l_g_msswd
                 loss_dict["l_g_msswd"] = l_g_msswd
+            # fdl perceptual loss
+            if self.cri_fdl:
+                l_g_fdl = self.cri_fdl(self.output, self.gt)
+                l_g_total += l_g_fdl
+                loss_dict["l_g_fdl"] = l_g_fdl
             # perceptual loss
             if self.cri_perceptual:
                 l_g_percep = self.cri_perceptual(self.output, self.gt)

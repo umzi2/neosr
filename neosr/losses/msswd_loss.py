@@ -114,8 +114,11 @@ def color_space_transform(input_color):
 
 @LOSS_REGISTRY.register()
 class msswd_loss(nn.Module):
+    """
+    Adapted from: https://github.com/real-hjq/MS-SWD
+    """
     def __init__(
-        self, num_scale=3, num_proj=16, patch_size=11, stride=1, c=3, loss_weight=1.0
+        self, num_scale=3, num_proj=24, patch_size=11, stride=1, c=3, loss_weight=1.0
     ):
         super().__init__()
         self.loss_weight = loss_weight
@@ -162,14 +165,14 @@ class msswd_loss(nn.Module):
     def forward(self, x, y):
         ms_swd = 0.0
         # Build Gaussian pyramids
-        with torch.no_grad():
-            x_pyramid = self.gaussian_pyramid(x)
-            y_pyramid = self.gaussian_pyramid(y)
-            for n in range(self.num_scale):
-                # Image preprocessing
-                x_single = color_space_transform(x_pyramid[n])
-                y_single = color_space_transform(y_pyramid[n])
-                swd = self.forward_once(x_single, y_single)
+        x_pyramid = self.gaussian_pyramid(x)
+        y_pyramid = self.gaussian_pyramid(y)
+        for n in range(self.num_scale):
+            # Image preprocessing
+            x_single = color_space_transform(x_pyramid[n])
+            y_single = color_space_transform(y_pyramid[n])
+            swd = self.forward_once(x_single, y_single)
+
         ms_swd = ms_swd + swd
         ms_swd = ms_swd / self.num_scale
         # decrease magnitude to balance with other losses

@@ -343,11 +343,10 @@ class SWTForward(nn.Module):
             h0_row,  # type: ignore[reportArgumentType]
             h1_row,  # type: ignore[reportArgumentType]
         )
-        with torch.no_grad():
-            self.h0_col = nn.Parameter(filts[0])
-            self.h1_col = nn.Parameter(filts[1])
-            self.h0_row = nn.Parameter(filts[2])
-            self.h1_row = nn.Parameter(filts[3])
+        self.h0_col = nn.Parameter(filts[0])
+        self.h1_col = nn.Parameter(filts[1])
+        self.h0_row = nn.Parameter(filts[2])
+        self.h1_row = nn.Parameter(filts[3])
 
         self.J = J
         self.mode = mode

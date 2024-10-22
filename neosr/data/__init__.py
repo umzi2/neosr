@@ -122,7 +122,7 @@ def build_dataloader(
     dataloader_args["pin_memory"] = dataset_opt.get("pin_memory", True)
     dataloader_args["persistent_workers"] = dataset_opt.get("persistent_workers", False)
 
-    return data.DataLoader(**dataloader_args)  # noqa: TOR401
+    return data.DataLoader(**dataloader_args)
 
 
 def worker_init_fn(worker_id: int, num_workers: int, rank: int, seed: int) -> None:

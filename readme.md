@@ -143,6 +143,7 @@ Where `options.toml` is a configuration file. Templates can be found in [options
 | [Consistency Loss](https://github.com/neosr-project/neosr/wiki/Losses#consistency_opt-consistency_loss) (Oklab and CIE L*)	| `consistency_opt`, `consistency_loss`	     |
 | [KL Divergence](https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html)						| `kl_opt`, `kl_loss`			     |
 | [MS-SWD](https://github.com/real-hjq/MS-SWD)											| `msswd_opt`, `msswd_loss`		     |
+| [FDL](https://github.com/eezkni/FDL)												| `fdl_opt`, `fdl_loss`			     |
 
 ### [supported augmentations](https://github.com/neosr-project/neosr/wiki/Configuration-Walkthrough#augmentations-aug_prob):
 

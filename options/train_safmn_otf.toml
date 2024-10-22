@@ -142,6 +142,15 @@ type = "gan_loss"
 gan_type = "bce"
 loss_weight = 0.1
 
+#[train.fdl_opt]
+#type = "fdl_loss"
+#model = "vgg" # "resnet", "effnet", "inception"
+#loss_weight = 1.0
+
+#[train.msswd_opt]
+#type = "msswd_loss"
+#loss_weight = 1.0
+
 #[train.dists_opt]
 #type = "dists_loss"
 #loss_weight = 0.5
