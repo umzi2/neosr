@@ -317,6 +317,13 @@ class cfsr(nn.Module):
 
         self.merged_inf = False
         self.merge_all()
+        self.apply(self._init_weights)
+
+    def _init_weights(self, m: nn.Module) -> None:
+        if isinstance(m, nn.Conv2d):
+            nn.init.trunc_normal_(m.weight, std=0.02)
+            if isinstance(m, nn.Conv2d) and m.bias is not None:
+                nn.init.constant_(m.bias, 0)
 
     def forward_features(self, x):
         for layer in self.layers:
