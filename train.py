@@ -4,6 +4,7 @@ import math
 import sys
 import time
 from os import path as osp
+from os import popen
 from pathlib import Path
 from typing import Any
 
@@ -200,9 +201,16 @@ def train_pipeline(root_path: str) -> None:
         logger_name="neosr", log_level=logging.INFO, log_file=str(log_file)
     )
 
-    logger.info(
-        f"\n------------------------ neosr ------------------------\nPytorch Version: {torch.__version__}"
+    driver_version = (
+        popen("nvidia-smi --query-gpu=driver_version --format=csv,noheader,nounits")  # noqa: S605, S607
+        .read()
+        .strip()
     )
+
+    logger.info(
+        f"\n------------------------ neosr ------------------------\nPytorch Version: {torch.__version__}. Running on gpu {torch.cuda.get_device_name()}, with driver {driver_version}."
+    )
+
     # initialize wandb and tb loggers
     tb_logger = init_tb_loggers(opt)
 

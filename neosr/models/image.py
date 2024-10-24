@@ -279,7 +279,9 @@ class image(base):
         # error handling
         optim_d = self.opt["train"].get("optim_d", None)
         pix_losses_bool = self.cri_pix or self.cri_mssim is not None
-        percep_losses_bool = self.cri_perceptual or self.cri_dists or self.cri_fdl is not None
+        percep_losses_bool = (
+            self.cri_perceptual or self.cri_dists or self.cri_fdl is not None
+        )
 
         if self.sam is not None and self.use_amp is True:
             # Closure not supported:

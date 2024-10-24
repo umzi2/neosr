@@ -117,6 +117,7 @@ class msswd_loss(nn.Module):
     """
     Adapted from: https://github.com/real-hjq/MS-SWD
     """
+
     def __init__(
         self, num_scale=3, num_proj=24, patch_size=11, stride=1, c=3, loss_weight=1.0
     ):
