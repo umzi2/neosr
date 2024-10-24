@@ -16,11 +16,19 @@ from neosr.utils.registry import LOSS_REGISTRY
 
 
 class VGG(nn.Module):
-    def __init__(self, requires_grad=False):
+    def __init__(
+        self, requires_grad=False, s1_w=1.0, s2_w=1.0, s3_w=1.0, s4_w=1.0, s5_w=1.0
+    ):
         super().__init__()
 
         vgg_pretrained_features = vgg.vgg19(weights=VGG19_Weights.DEFAULT).features
         vgg_pretrained_features.eval()
+
+        self.s1_w = s1_w
+        self.s2_w = s2_w
+        self.s3_w = s3_w
+        self.s4_w = s4_w
+        self.s5_w = s5_w
 
         self.stage1 = nn.Sequential()
         self.stage2 = nn.Sequential()
@@ -57,19 +65,19 @@ class VGG(nn.Module):
         h = (x - self.mean) / self.std
 
         h = self.stage1(h)
-        h_relu1_2 = h
+        h_relu1_2 = h * self.s1_w
 
         h = self.stage2(h)
-        h_relu2_2 = h
+        h_relu2_2 = h * self.s2_w
 
         h = self.stage3(h)
-        h_relu3_3 = h
+        h_relu3_3 = h * self.s3_w
 
         h = self.stage4(h)
-        h_relu4_3 = h
+        h_relu4_3 = h * self.s4_w
 
         h = self.stage5(h)
-        h_relu5_3 = h
+        h_relu5_3 = h * self.s5_w
 
         # get the features of each layer
         return [h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3]
@@ -223,6 +231,11 @@ class fdl_loss(nn.Module):
         stride=1,
         num_proj=24,
         model="vgg",
+        s1_w=1.0,
+        s2_w=1.0,
+        s3_w=1.0,
+        s4_w=1.0,
+        s5_w=1.0,
         phase_weight=1.0,
         loss_weight=1.0,
     ):
@@ -247,7 +260,7 @@ class fdl_loss(nn.Module):
         elif model == "inception":
             self.model = Inception()
         elif model == "vgg":
-            self.model = VGG()
+            self.model = VGG(s1_w=s1_w, s2_w=s2_w, s3_w=s3_w, s4_w=s4_w, s5_w=s5_w)
         else:
             msg = "Invalid model type! Valid models: VGG, Inception, EffNet, ResNet"
             raise NotImplementedError(msg)

@@ -99,7 +99,7 @@ loss_weight = 0.1
 #[train.fdl_opt]
 #type = "fdl_loss"
 #model = "vgg" # "resnet", "effnet", "inception"
-#loss_weight = 1.0
+#loss_weight = 0.5
 
 #[train.msswd_opt]
 #type = "msswd_loss"
