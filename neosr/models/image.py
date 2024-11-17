@@ -580,12 +580,9 @@ class image(base):
                 loss_dict["l_g_gw"] = l_g_gw
             # gan loss
             if self.cri_gan:
-                if self.ema > 0:
-                    self.net_d_ema.eval()
-                    fake_g_pred = self.net_d_ema(self.output)  # type: ignore[reportCallIssue,reportOptionalCall]
-                else:
-                    self.net_d.eval()
-                    fake_g_pred = self.net_d(self.output)  # type: ignore[reportCallIssue,reportOptionalCall]
+                self.net_d.eval()
+                fake_g_pred = self.net_d(self.output)  # type: ignore[reportCallIssue,reportOptionalCall]
+                self.net_d.train()
                 l_g_gan = self.cri_gan(fake_g_pred, target_is_real=True, is_disc=False)
                 l_g_total += l_g_gan
                 loss_dict["l_g_gan"] = l_g_gan
